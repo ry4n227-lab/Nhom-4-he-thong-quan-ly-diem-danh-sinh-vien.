@@ -5,13 +5,14 @@ class TeacherDashboard(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Teacher Dashboard")
-        self.geometry("600x500")
+        self.geometry("700x600")
 
-        ctk.CTkLabel(self, text="Take Attendance", font=("Arial", 20)).pack(pady=10)
+        ctk.CTkLabel(self, text="TEACHER DASHBOARD", font=("Arial", 20)).pack(pady=10)
 
-        # Fake student list
+        # ===== UC7 + UC8 =====
+        ctk.CTkLabel(self, text="Take Attendance").pack()
+
         self.students = ["SV001 - An", "SV002 - Bình", "SV003 - Cường"]
-
         self.status_vars = []
 
         for student in self.students:
@@ -25,13 +26,32 @@ class TeacherDashboard(ctk.CTk):
 
             ctk.CTkOptionMenu(frame, values=["Present", "Absent", "Late"], variable=var).pack(side="right")
 
-        ctk.CTkButton(self, text="Save Attendance", command=self.save).pack(pady=20)
+        ctk.CTkButton(self, text="Save Attendance", command=self.save_attendance).pack(pady=10)
 
-    def save(self):
+        # ===== UC4 =====
+        ctk.CTkLabel(self, text="Leave Requests").pack(pady=10)
+
+        self.requests = [
+            {"student": "SV001", "reason": "Sick"},
+            {"student": "SV002", "reason": "Family issue"}
+        ]
+
+        for req in self.requests:
+            frame = ctk.CTkFrame(self)
+            frame.pack(pady=5, fill="x", padx=10)
+
+            text = f"{req['student']} - {req['reason']}"
+            ctk.CTkLabel(frame, text=text).pack(side="left", padx=10)
+
+            ctk.CTkButton(frame, text="Approve", command=lambda r=req: self.handle_request(r, "Approved")).pack(side="right")
+            ctk.CTkButton(frame, text="Reject", command=lambda r=req: self.handle_request(r, "Rejected")).pack(side="right")
+
+    # ===== Save Attendance =====
+    def save_attendance(self):
+        print("=== Attendance Saved ===")
         for student, var in zip(self.students, self.status_vars):
             print(student, ":", var.get())
 
-
-if __name__ == "__main__":
-    app = TeacherDashboard()
-    app.mainloop()
+    # ===== UC4 =====
+    def handle_request(self, request, status):
+        print(f"{request['student']} request {status}")
