@@ -1,9 +1,11 @@
 import customtkinter as ctk
 from tkinter import messagebox
 
+
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
+from src.controllers.admin_controller import save_new_user_to_db, save_new_course_to_db
 
 class AdminDashboard(ctk.CTk):
 
