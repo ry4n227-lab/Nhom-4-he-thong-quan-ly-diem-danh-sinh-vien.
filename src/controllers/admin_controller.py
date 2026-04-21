@@ -6,7 +6,7 @@ from .login_controller import get_db_connection
 def save_new_user_to_db(user_id, fullname, email, role, password):
     """
     Lưu tài khoản mới. 
-    Tự động phân luồng lưu vào bảng Teachers hoặc Students dựa theo Role.
+    Tự động phân luồng lưu vào bảng teachers hoặc students dựa theo Role.
     """
     conn = get_db_connection()
     if not conn:
@@ -16,20 +16,18 @@ def save_new_user_to_db(user_id, fullname, email, role, password):
         cursor = conn.cursor()
         
         # Phân luồng bảng dựa theo Dropdown của UI
-        # Lưu ý: Cấu trúc này khớp với logic Login (chia bảng) của bạn
         if role == "Teacher":
-            table_name = "Teachers"
+            table_name = "teachers" # Đã sửa thành chữ thường
             id_col = "teacher_id"
         elif role == "Student":
-            table_name = "Students"
+            table_name = "students" # Đã sửa thành chữ thường
             id_col = "student_id"
         else:
             return False, "Vai trò (Role) không hợp lệ!"
 
-        # Câu lệnh SQL chèn dữ liệu
-        # BẠN NHỚ NHẮC QUYÊN ĐẢM BẢO XAMPP CÓ CÁC CỘT NÀY NHÉ!
+        # ĐÃ SỬA: Chữ full_name có dấu gạch dưới cho khớp DB
         sql = f"""
-            INSERT INTO {table_name} ({id_col}, fullname, email, password)
+            INSERT INTO {table_name} ({id_col}, full_name, email, password)
             VALUES (%s, %s, %s, %s)
         """
         cursor.execute(sql, (user_id, fullname, email, password))
@@ -48,11 +46,11 @@ def save_new_user_to_db(user_id, fullname, email, role, password):
 
 
 # =====================
-# Quản lý Môn học (UC 12)
+# Quản lý Môn học / Lớp học (UC 12)
 # =====================
 def save_new_course_to_db(course_id, course_name):
     """
-    Lưu môn học mới vào bảng Courses.
+    Lưu môn học mới vào bảng classes.
     """
     conn = get_db_connection()
     if not conn:
@@ -61,19 +59,21 @@ def save_new_course_to_db(course_id, course_name):
     try:
         cursor = conn.cursor()
         
-        # Giả định bạn Quyên tạo bảng môn học tên là `Courses`
+        # ĐÃ SỬA: Đổi tên bảng thành classes 
+        # LƯU Ý: Đang giả định 2 cột trên DB của bạn là class_id và class_name
+        # Nếu chạy bị lỗi "Unknown column", hãy mở XAMPP xem lại tên 2 cột này nhé!
         sql = """
-            INSERT INTO Courses (course_id, course_name)
+            INSERT INTO classes (class_id, class_name)
             VALUES (%s, %s)
         """
         cursor.execute(sql, (course_id, course_name))
         
         conn.commit()
-        return True, f"Thêm môn học '{course_name}' thành công!"
+        return True, f"Thêm môn học/lớp '{course_name}' thành công!"
         
     except Exception as e:
         if "Duplicate entry" in str(e):
-            return False, f"Lỗi: Mã môn '{course_id}' đã tồn tại!"
+            return False, f"Lỗi: Mã '{course_id}' đã tồn tại!"
         return False, f"Lỗi Database: {str(e)}"
     finally:
         if conn.is_connected():
