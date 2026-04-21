@@ -1,5 +1,14 @@
 import customtkinter as ctk
 from tkinter import messagebox
+import datetime
+
+# =====================
+# Import Controller Logic
+# =====================
+try:
+    from src.controllers.attendance_controller import save_attendance_data
+except ImportError:
+    print("Warning: Could not import attendance_controller. Make sure the file exists.")
 
 class TeacherDashboard(ctk.CTk):
     def __init__(self):
@@ -9,9 +18,12 @@ class TeacherDashboard(ctk.CTk):
         # Window Configuration
         # =====================
         self.title("Teacher Dashboard")
-        self.geometry("800x600")
+        self.geometry("800x650")
         self.eval('tk::PlaceWindow . center')
         
+        # Store UI widgets to read data later
+        self.student_status_widgets = {}
+
         # Main Title
         self.lbl_title = ctk.CTkLabel(self, text="TEACHER DASHBOARD", font=("Arial", 24, "bold"))
         self.lbl_title.pack(pady=20)
@@ -19,21 +31,21 @@ class TeacherDashboard(ctk.CTk):
         # =====================
         # Tab View Setup
         # =====================
-        self.tabview = ctk.CTkTabview(self, width=750, height=500)
+        self.tabview = ctk.CTkTabview(self, width=750, height=550)
         self.tabview.pack(padx=20, pady=10)
 
-        self.tabview.add("Attendance (UC 3 & 6)")
-        self.tabview.add("Leave Requests (UC 8)")
+        self.tabview.add("Attendance")
+        self.tabview.add("Leave Requests")
 
         # Initialize Tabs
         self.setup_attendance_tab()
         self.setup_leave_request_tab()
 
     # =====================
-    # TAB 1: ATTENDANCE
+    # TAB 1: ATTENDANCE (UC 3 & 6)
     # =====================
     def setup_attendance_tab(self):
-        tab = self.tabview.tab("Attendance (UC 3 & 6)")
+        tab = self.tabview.tab("Attendance")
         
         # Top Controls
         self.lbl_class = ctk.CTkLabel(tab, text="Select Class:")
@@ -42,29 +54,24 @@ class TeacherDashboard(ctk.CTk):
         self.cb_class = ctk.CTkComboBox(tab, values=["INT1340 - Python", "INT1339 - Database"])
         self.cb_class.grid(row=0, column=1, padx=10, pady=10)
 
-        self.btn_start = ctk.CTkButton(tab, text="Open Attendance Session", command=self.load_students)
+        self.btn_start = ctk.CTkButton(tab, text="Load Students", command=self.load_students)
         self.btn_start.grid(row=0, column=2, padx=20, pady=10)
 
         # Student List Area (Scrollable)
-        self.scroll_frame = ctk.CTkScrollableFrame(tab, width=650, height=300)
+        self.scroll_frame = ctk.CTkScrollableFrame(tab, width=650, height=350)
         self.scroll_frame.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
 
-        # Column Headers
-        ctk.CTkLabel(self.scroll_frame, text="Student ID", font=("Arial", 12, "bold")).grid(row=0, column=0, padx=30)
-        ctk.CTkLabel(self.scroll_frame, text="Full Name", font=("Arial", 12, "bold")).grid(row=0, column=1, padx=30)
-        ctk.CTkLabel(self.scroll_frame, text="Status", font=("Arial", 12, "bold")).grid(row=0, column=2, padx=30)
-
         # Save Button
-        self.btn_save = ctk.CTkButton(tab, text="Save Attendance", command=self.save_attendance, fg_color="green", hover_color="darkgreen")
+        self.btn_save = ctk.CTkButton(tab, text="Save to Database", command=self.save_attendance, fg_color="green", hover_color="darkgreen")
         self.btn_save.grid(row=2, column=0, columnspan=3, pady=15)
 
     # =====================
-    # TAB 2: LEAVE REQUESTS
+    # TAB 2: LEAVE REQUESTS (UC 8)
     # =====================
     def setup_leave_request_tab(self):
-        tab = self.tabview.tab("Leave Requests (UC 8)")
+        tab = self.tabview.tab("Leave Requests")
 
-        self.req_frame = ctk.CTkScrollableFrame(tab, width=700, height=350)
+        self.req_frame = ctk.CTkScrollableFrame(tab, width=700, height=400)
         self.req_frame.pack(padx=10, pady=20)
 
         # Mock Data for Requests
@@ -93,24 +100,60 @@ class TeacherDashboard(ctk.CTk):
             ctk.CTkButton(btn_frame, text="Reject", width=60, fg_color="red").pack(side="left", padx=5)
 
     # =====================
-    # Mock Functions
+    # Core Functions
     # =====================
     def load_students(self):
-        messagebox.showinfo("System", "Attendance session opened!")
-        # Mock students
+        # Clear old UI elements if reloading
+        for widget in self.scroll_frame.winfo_children():
+            widget.destroy()
+        self.student_status_widgets.clear()
+
+        # Column Headers
+        ctk.CTkLabel(self.scroll_frame, text="Student ID", font=("Arial", 12, "bold")).grid(row=0, column=0, padx=30, pady=10)
+        ctk.CTkLabel(self.scroll_frame, text="Full Name", font=("Arial", 12, "bold")).grid(row=0, column=1, padx=30, pady=10)
+        ctk.CTkLabel(self.scroll_frame, text="Status", font=("Arial", 12, "bold")).grid(row=0, column=2, padx=30, pady=10)
+
+        # Mock students (In reality, this comes from a DB SELECT query)
         students = [("SV01", "Nguyen Van A"), ("SV02", "Tran Thi B"), ("SV03", "Le Van C")]
         
-        for i, sv in enumerate(students, start=1):
-            ctk.CTkLabel(self.scroll_frame, text=sv[0]).grid(row=i, column=0, padx=30, pady=5)
-            ctk.CTkLabel(self.scroll_frame, text=sv[1]).grid(row=i, column=1, padx=30, pady=5)
+        for i, (sv_id, sv_name) in enumerate(students, start=1):
+            ctk.CTkLabel(self.scroll_frame, text=sv_id).grid(row=i, column=0, padx=30, pady=5)
+            ctk.CTkLabel(self.scroll_frame, text=sv_name).grid(row=i, column=1, padx=30, pady=5)
             
-            # Status Dropdown (Present, Absent, Late)
-            status_cb = ctk.CTkComboBox(self.scroll_frame, values=["Present", "Absent", "Late"], width=100)
+            # Status Dropdown
+            status_cb = ctk.CTkComboBox(self.scroll_frame, values=["Present", "Absent", "Late"], width=120)
             status_cb.set("Present")
             status_cb.grid(row=i, column=2, padx=30, pady=5)
 
+            # Store the widget reference in dictionary to read its value later
+            self.student_status_widgets[sv_id] = status_cb
+
     def save_attendance(self):
-        messagebox.showinfo("Success", "Attendance data saved to Database!")
+        if not self.student_status_widgets:
+            messagebox.showwarning("Warning", "Please load students first!")
+            return
+
+        class_selected = self.cb_class.get()
+        # Get actual current date
+        current_date = datetime.date.today().strftime('%Y-%m-%d')
+        
+        # Extract data from UI Comboboxes
+        attendance_list = []
+        for sv_id, cb_widget in self.student_status_widgets.items():
+            status = cb_widget.get()
+            attendance_list.append((sv_id, status))
+
+        # Pass data to Controller Logic
+        try:
+            success, message = save_attendance_data(class_selected, current_date, attendance_list)
+            if success:
+                messagebox.showinfo("Success", message)
+            else:
+                messagebox.showerror("Error", message)
+        except NameError:
+            # Fallback if attendance_controller.py is not yet available
+            print("Data ready to save:", attendance_list)
+            messagebox.showwarning("Dev Mode", "UI is ready, waiting for backend connection.")
 
 if __name__ == "__main__":
     app = TeacherDashboard()
