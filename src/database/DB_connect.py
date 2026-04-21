@@ -112,6 +112,71 @@ def update_student(student_id, new_name, new_email, new_class):
         if conn.is_connected():
             conn.close()
 
+# =====================
+# CHECK LOGIN
+# =====================
+def check_login(user_id, password, role):
+    conn = connect_db()
+    if conn is None:
+        return False
+
+    try:
+        cursor = conn.cursor()
+
+        if role == 'Admin':
+            id_column = 'username'
+        elif role == 'Teachers':
+            id_column = 'teacher_id'
+        elif role == 'Students':
+            id_column = 'student_id'
+        else:
+            return False
+
+        sql = f"SELECT * FROM {role} WHERE {id_column} = %s AND password = %s"
+        cursor.execute(sql, (user_id, password))
+
+        if cursor.fetchone():
+            return True
+        return False
+
+    except Exception as e:
+        print("❌ Lỗi:", e)
+        return False
+
+    finally:
+        if conn.is_connected():
+            conn.close()
+
+# =====================
+# CHECK SCHEDULE
+# =====================
+def check_schedule_conflict(room, date, start_time, end_time):
+    conn = connect_db()
+    if conn is None:
+        return True
+
+    try:
+        cursor = conn.cursor()
+
+        sql = """
+        SELECT 1 FROM Sessions 
+        WHERE room = %s AND date = %s 
+        AND NOT (end_time <= %s OR start_time >= %s)
+        """
+        cursor.execute(sql, (room, date, end_time, start_time))
+
+        if cursor.fetchone():
+            return True
+        return False
+
+    except Exception as e:
+        print("❌ Lỗi:", e)
+        return True
+
+    finally:
+        if conn.is_connected():
+            conn.close()
+
 # Test chức năng
 if __name__ == "__main__":
 #Thêm
@@ -125,3 +190,9 @@ if __name__ == "__main__":
     
 #Xem ds
     get_students()
+    
+#Check login
+    print("Login Admin:", check_login("admin", "123456", "Admin"))
+
+#Check schedule
+    print("Conflict:", check_schedule_conflict("A101", "2026-04-22", "09:00:00", "11:00:00"))
