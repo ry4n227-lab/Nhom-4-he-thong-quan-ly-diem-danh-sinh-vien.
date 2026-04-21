@@ -104,4 +104,36 @@ class StudentDashboard(ctk.CTk):
                 messagebox.showwarning("CẢNH BÁO HỌC VỤ ⚠️", 
                     f"Bạn đã vắng mặt {absent_count} buổi!\n\nNếu vắng quá 3 buổi, bạn sẽ bị cấm thi môn này.")
             else:
-                messagebox.showinfo("Thông báo", f"Bạn đã vắng {absent
+                messagebox.showinfo("Thông báo", f"Bạn đã vắng {absent_count} buổi. Hãy tiếp tục đi học đầy đủ!")
+
+        except NameError:
+            # Dữ liệu mẫu nếu chưa có controller
+            self.history_box.insert("end", "Dữ liệu mẫu (Chưa kết nối DB):\n2026-04-20: Absent\n2026-04-21: Absent\n2026-04-22: Absent")
+            messagebox.showwarning("Cảnh báo", "Bạn đã vắng 3 buổi! (Dữ liệu mẫu)")
+
+    def upload_file(self):
+        file = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg"), ("PDF files", "*.pdf")])
+        if file:
+            self.file_path = file
+            filename = file.split("/")[-1]
+            self.file_label.configure(text=f"📎 {filename}", text_color="blue")
+
+    def submit_request(self):
+        date = self.date_entry.get().strip()
+        reason = self.reason_entry.get("1.0", "end").strip()
+
+        if not date or not reason:
+            messagebox.showerror("Lỗi", "Vui lòng nhập đầy đủ thông tin ngày nghỉ và lý do!")
+            return
+
+        messagebox.showinfo("Thành công", f"Đơn xin nghỉ ngày {date} đã được gửi tới giảng viên.")
+        
+        # Reset form
+        self.date_entry.delete(0, 'end')
+        self.reason_entry.delete("1.0", "end")
+        self.file_label.configure(text="Chưa chọn tệp", text_color="gray")
+        self.file_path = ""
+
+if __name__ == "__main__":
+    app = StudentDashboard()
+    app.mainloop()
