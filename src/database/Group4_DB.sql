@@ -1,14 +1,15 @@
+DROP DATABASE IF EXISTS attendance_db;
 CREATE DATABASE attendance_db;
 USE attendance_db;
 
 -- =====================
--- Students
+-- Admin
 -- =====================
-CREATE TABLE Students (
-    student_id VARCHAR(10) PRIMARY KEY,
-    full_name VARCHAR(100),
-    email VARCHAR(100),
-    class_id INT
+CREATE TABLE Admin (
+    admin_id VARCHAR(10) PRIMARY KEY,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(20) NOT NULL,
+    full_name VARCHAR(100)
 );
 
 -- =====================
@@ -17,7 +18,8 @@ CREATE TABLE Students (
 CREATE TABLE Teachers (
     teacher_id VARCHAR(10) PRIMARY KEY,
     full_name VARCHAR(100),
-    email VARCHAR(100)
+    email VARCHAR(100),
+    password VARCHAR(20) DEFAULT '123456'
 );
 
 -- =====================
@@ -27,7 +29,19 @@ CREATE TABLE Classes (
     class_id INT AUTO_INCREMENT PRIMARY KEY,
     class_name VARCHAR(100),
     teacher_id VARCHAR(10),
-    FOREIGN KEY (teacher_id) REFERENCES Teachers(teacher_id)
+    FOREIGN KEY (teacher_id) REFERENCES Teachers(teacher_id) ON DELETE CASCADE
+);
+
+-- =====================
+-- Students
+-- =====================
+CREATE TABLE Students (
+    student_id VARCHAR(10) PRIMARY KEY,
+    full_name VARCHAR(100),
+    email VARCHAR(100),
+    class_id INT,
+    password VARCHAR(20) DEFAULT '123456',
+    FOREIGN KEY (class_id) REFERENCES Classes(class_id) ON DELETE SET NULL
 );
 
 -- =====================
@@ -39,17 +53,36 @@ CREATE TABLE Attendance (
     class_id INT,
     date DATE,
     status VARCHAR(20),
-    FOREIGN KEY (student_id) REFERENCES Students(student_id),
-    FOREIGN KEY (class_id) REFERENCES Classes(class_id)
+    FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (class_id) REFERENCES Classes(class_id) ON DELETE CASCADE
 );
+
+-- =====================
+-- Bảng Sessions 
+-- =====================
+CREATE TABLE Sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id INT,
+    date DATE,
+    start_time TIME,
+    end_time TIME,
+    room VARCHAR(50),
+    FOREIGN KEY (class_id) REFERENCES Classes(class_id) ON DELETE CASCADE
+);
+
 USE attendance_db;
+
+-- =====================
+-- ADMIN
+-- =====================
+INSERT INTO Admin VALUES ('A01', 'admin', '123456', 'System administrator');
 
 -- =====================
 -- TEACHERS
 -- =====================
-INSERT INTO Teachers VALUES
-('T01', 'Nguyen Van A', 'vana@gmail.com'),
-('T02', 'Tran Thi B', 'thib@gmail.com');
+INSERT INTO Teachers (teacher_id, full_name, email, password) VALUES
+('T01', 'Nguyen Van A', 'vana@gmail.com', '123456'),
+('T02', 'Tran Thi B', 'thib@gmail.com', '123456');
 
 -- =====================
 -- CLASSES
@@ -61,11 +94,11 @@ INSERT INTO Classes (class_name, teacher_id) VALUES
 -- =====================
 -- STUDENTS
 -- =====================
-INSERT INTO Students VALUES
-('SV01', 'Le Minh Hoang', 'hoang@gmail.com', 1),
-('SV02', 'Pham Thu Trang', 'trang@gmail.com', 1),
-('SV03', 'Nguyen Quang Huy', 'huy@gmail.com', 2),
-('SV04', 'Do Thi Lan', 'lan@gmail.com', 2);
+INSERT INTO Students (student_id, full_name, email, class_id, password) VALUES
+('SV01', 'Le Minh Hoang', 'hoang@gmail.com', 1, '123456'),
+('SV02', 'Pham Thu Trang', 'trang@gmail.com', 1, '123456'),
+('SV03', 'Nguyen Quang Huy', 'huy@gmail.com', 2, '123456'),
+('SV04', 'Do Thi Lan', 'lan@gmail.com', 2, '123456');
 
 -- =====================
 -- ATTENDANCE
