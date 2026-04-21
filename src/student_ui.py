@@ -1,74 +1,107 @@
 import customtkinter as ctk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
+
+# ==========================================
+# THIẾT LẬP GIAO DIỆN ĐỒNG BỘ
+# ==========================================
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("blue")
+
+# Kết nối với Backend
+try:
+    from src.controllers.student_controller import get_attendance_history
+except ImportError:
+    print("Cảnh báo: Chưa tìm thấy file student_controller.py")
 
 class StudentDashboard(ctk.CTk):
 
     def __init__(self):
         super().__init__()
         self.title("Student Dashboard")
-        self.geometry("600x600")
+        self.geometry("650x650")
+        self.eval('tk::PlaceWindow . center')
 
         self.file_path = ""
 
-        ctk.CTkLabel(self, text="STUDENT DASHBOARD", font=("Arial", 20)).pack(pady=10)
+        # Tiêu đề chính
+        ctk.CTkLabel(self, text="STUDENT DASHBOARD", font=("Arial", 22, "bold")).pack(pady=15)
 
-        # ===== View Attendance History =====
-        ctk.CTkLabel(self, text="Attendance History").pack()
+        # ==========================================
+        # 1. XEM LỊCH SỬ & CẢNH BÁO (UC 5)
+        # ==========================================
+        history_frame = ctk.CTkFrame(self, fg_color="transparent")
+        history_frame.pack(pady=10, fill="x", padx=30)
 
-        self.history_box = ctk.CTkTextbox(self, height=100)
-        self.history_box.pack(pady=5)
+        ctk.CTkLabel(history_frame, text="1. Lịch sử điểm danh", font=("Arial", 16, "bold")).pack(anchor="w")
 
-        ctk.CTkButton(self, text="Load History", command=self.load_history).pack(pady=5)
+        self.history_box = ctk.CTkTextbox(history_frame, height=150, font=("Arial", 14))
+        self.history_box.pack(pady=10, fill="x")
 
-        # ===== Submit Leave Request =====
-        ctk.CTkLabel(self, text="Submit Leave Request").pack(pady=10)
+        ctk.CTkButton(history_frame, text="Tải lịch sử", font=("Arial", 14, "bold"), 
+                      command=self.load_history).pack(anchor="e")
 
-        self.date_entry = ctk.CTkEntry(self, placeholder_text="Date (YYYY-MM-DD)")
-        self.date_entry.pack(pady=5)
 
-        self.reason_entry = ctk.CTkTextbox(self, height=100)
-        self.reason_entry.pack(pady=5)
+        # ==========================================
+        # 2. NỘP ĐƠN XIN PHÉP (UC 3 & 6)
+        # ==========================================
+        leave_frame = ctk.CTkFrame(self, fg_color="transparent")
+        leave_frame.pack(pady=20, fill="x", padx=30)
 
-        ctk.CTkButton(self, text="Upload Proof", command=self.upload_file).pack(pady=5)
+        ctk.CTkLabel(leave_frame, text="2. Nộp đơn xin nghỉ học", font=("Arial", 16, "bold")).pack(anchor="w")
 
-        self.file_label = ctk.CTkLabel(self, text="No file selected")
-        self.file_label.pack()
+        self.date_entry = ctk.CTkEntry(leave_frame, placeholder_text="Ngày nghỉ (YYYY-MM-DD)", font=("Arial", 14), height=35)
+        self.date_entry.pack(pady=(10, 5), fill="x")
 
-        ctk.CTkButton(self, text="Submit Request", command=self.submit).pack(pady=10)
+        self.reason_entry = ctk.CTkTextbox(leave_frame, height=80, font=("Arial", 14))
+        self.reason_entry.insert("1.0", "Nhập lý do nghỉ học...")
+        self.reason_entry.pack(pady=5, fill="x")
 
-    # ===== UC5 =====
+        # Tải minh chứng
+        upload_frame = ctk.CTkFrame(leave_frame, fg_color="transparent")
+        upload_frame.pack(fill="x", pady=5)
+
+        ctk.CTkButton(upload_frame, text="Tải minh chứng", command=self.upload_file, 
+                      fg_color="gray", hover_color="darkgray").pack(side="left")
+        
+        self.file_label = ctk.CTkLabel(upload_frame, text="Chưa chọn tệp", text_color="gray", font=("Arial", 12, "italic"))
+        self.file_label.pack(side="left", padx=15)
+
+        # Nút Submit
+        ctk.CTkButton(leave_frame, text="Gửi Đơn Xin Nghỉ", font=("Arial", 16, "bold"), 
+                      fg_color="green", hover_color="darkgreen", height=40,
+                      command=self.submit_request).pack(pady=20)
+
+
+    # ================= LOGIC XỬ LÝ =================
+
     def load_history(self):
-        fake_data = [
-            "2026-04-01: Present",
-            "2026-04-02: Absent",
-            "2026-04-03: Late"
-        ]
-        self.history_box.delete("1.0", "end")
-        for item in fake_data:
-            self.history_box.insert("end", item + "\n")
+        """Lấy dữ liệu từ DB và kiểm tra cảnh báo vắng mặt"""
+        # Giả định ID sinh viên hiện tại là SV01 (Thực tế lấy từ login)
+        current_student_id = "SV01" 
 
-    # ===== UC6 =====
-    def upload_file(self):
-        file = filedialog.askopenfilename()
-        if file:
-            if not file.endswith((".png", ".jpg", ".pdf")):
-                self.file_label.configure(text="❌ Invalid file format")
+        try:
+            success, msg, data = get_attendance_history(current_student_id)
+            
+            if not success:
+                messagebox.showerror("Lỗi", msg)
                 return
-            self.file_path = file
-            self.file_label.configure(text=file)
 
-    # ===== UC3 =====
-    def submit(self):
-        date = self.date_entry.get()
-        reason = self.reason_entry.get("1.0", "end").strip()
+            self.history_box.delete("1.0", "end")
+            absent_count = 0
+            
+            if not data:
+                self.history_box.insert("end", "Chưa có dữ liệu điểm danh.")
+                return
 
-        if not date or not reason:
-            self.file_label.configure(text="❌ Missing information")
-            return
+            for record in data:
+                date_val, status_val = record
+                self.history_box.insert("end", f"Ngày {date_val}: {status_val}\n")
+                if status_val == "Absent":
+                    absent_count += 1
 
-        print("✅ Leave Request Submitted")
-        print("Date:", date)
-        print("Reason:", reason)
-        print("File:", self.file_path)
-
-        self.file_label.configure(text="✅ Submitted successfully")
+            # CẢNH BÁO TỰ ĐỘNG
+            if absent_count >= 3:
+                messagebox.showwarning("CẢNH BÁO HỌC VỤ ⚠️", 
+                    f"Bạn đã vắng mặt {absent_count} buổi!\n\nNếu vắng quá 3 buổi, bạn sẽ bị cấm thi môn này.")
+            else:
+                messagebox.showinfo("Thông báo", f"Bạn đã vắng {absent
