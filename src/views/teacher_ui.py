@@ -98,4 +98,20 @@ class TeacherDashboard(ctk.CTk):
     def load_students(self):
         messagebox.showinfo("System", "Attendance session opened!")
         # Mock students
-        students = [("SV
+        students = [("SV01", "Nguyen Van A"), ("SV02", "Tran Thi B"), ("SV03", "Le Van C")]
+        
+        for i, sv in enumerate(students, start=1):
+            ctk.CTkLabel(self.scroll_frame, text=sv[0]).grid(row=i, column=0, padx=30, pady=5)
+            ctk.CTkLabel(self.scroll_frame, text=sv[1]).grid(row=i, column=1, padx=30, pady=5)
+            
+            # Status Dropdown (Present, Absent, Late)
+            status_cb = ctk.CTkComboBox(self.scroll_frame, values=["Present", "Absent", "Late"], width=100)
+            status_cb.set("Present")
+            status_cb.grid(row=i, column=2, padx=30, pady=5)
+
+    def save_attendance(self):
+        messagebox.showinfo("Success", "Attendance data saved to Database!")
+
+if __name__ == "__main__":
+    app = TeacherDashboard()
+    app.mainloop()
