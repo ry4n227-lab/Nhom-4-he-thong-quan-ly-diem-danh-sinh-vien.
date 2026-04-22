@@ -1,6 +1,5 @@
 import mysql.connector
 
-# Database Connection
 def get_db_connection():
     try:
         return mysql.connector.connect(
@@ -13,8 +12,6 @@ def get_db_connection():
         print("DB Connection Error:", e)
         return None
 
-
-# Login Logic 
 
 def verify_login(user_id, password, role):
     conn = get_db_connection()
