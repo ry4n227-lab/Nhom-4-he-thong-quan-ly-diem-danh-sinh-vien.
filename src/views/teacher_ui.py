@@ -4,6 +4,7 @@ import datetime
 
 try:
     from src.controllers.teacher_controller import (
+        update_leave_request_status,
         get_teacher_classes, get_class_students, 
         save_attendance_data, get_leave_requests
     )
@@ -155,8 +156,21 @@ class TeacherDashboard(ctk.CTk):
         else:
             messagebox.showerror("Lỗi Database", msg)
 
-    def handle_request(self, req_id, status):
-        messagebox.showinfo("Thông báo", f"Đã {status} đơn số {req_id}")
+  def handle_request(self, req_id, status):
+        # 1. Gọi xuống Database để cập nhật thật
+        success, msg = update_leave_request_status(req_id, status)
+        
+        if success:
+            messagebox.showinfo("Thành công", f"Đã {status} đơn số {req_id}")
+            
+            # 2. Xóa sạch các đơn cũ đang hiển thị trên màn hình
+            for widget in self.req_frame.winfo_children():
+                widget.destroy()
+                
+            # 3. Tải lại danh sách đơn (những đơn Pending còn lại)
+            self.load_leave_requests()
+        else:
+            messagebox.showerror("Lỗi Database", msg)
 
 if __name__ == "__main__":
     app = TeacherDashboard()
