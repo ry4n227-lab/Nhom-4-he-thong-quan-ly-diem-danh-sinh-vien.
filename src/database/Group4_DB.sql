@@ -70,6 +70,16 @@ CREATE TABLE Sessions (
     FOREIGN KEY (class_id) REFERENCES Classes(class_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS leave_requests (
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) NOT NULL,
+    reason TEXT NOT NULL,
+    date DATE NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pending',
+    FOREIGN KEY (student_id) REFERENCES students(student_id)
+    
+);
+
 USE attendance_db;
 
 -- =====================
@@ -113,3 +123,6 @@ INSERT INTO Attendance (student_id, class_id, date, status) VALUES
 ('SV02', 1, '2026-04-21', 'Present'),
 ('SV03', 2, '2026-04-21', 'Absent'),
 ('SV04', 2, '2026-04-21', 'Late');
+
+INSERT INTO leave_requests (student_id, reason, date, status) 
+VALUES ('SV01', 'Bị ốm nên xin nghỉ', '2026-04-26', 'Pending');
