@@ -73,17 +73,18 @@ class LoginView(ctk.CTk):
             messagebox.showwarning("Thông báo", "Vui lòng nhập đầy đủ thông tin!")
             return
 
-        # Gọi hàm kiểm tra từ login_controller.py
+       # Gọi hàm kiểm tra từ login_controller.py
         try:
             is_valid = verify_login(username, password, role)
             if is_valid:
                 messagebox.showinfo("Thành công", f"Chào mừng {role} đã quay trở lại!")
-                self.withdraw() # Ẩn màn hình đăng nhập (Thay vì destroy để tránh lỗi mainloop)
+                
+                # SỬA DÒNG NÀY: Dùng destroy() thay vì withdraw()
+                self.destroy() 
+                
                 self.open_main_dashboard(role)
             else:
                 messagebox.showerror("Lỗi", "Tài khoản hoặc mật khẩu không chính xác!")
-        except NameError:
-            messagebox.showerror("Lỗi hệ thống", "Chưa kết nối được với Controller!")
 
     def open_main_dashboard(self, role):
         try:
