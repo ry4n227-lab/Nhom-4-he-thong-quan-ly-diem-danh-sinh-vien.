@@ -1,8 +1,4 @@
-from .login_controller import get_db_connection
-
-# =====================
-# Quản lý Tài khoản (UC 11)
-# =====================
+from .login_controller import get_db_connectio
 def save_new_user_to_db(user_id, fullname, email, role, password):
     """
     Lưu tài khoản mới. 
@@ -15,24 +11,21 @@ def save_new_user_to_db(user_id, fullname, email, role, password):
     try:
         cursor = conn.cursor()
         
-        # Phân luồng bảng dựa theo Dropdown của UI
         if role == "Teacher":
-            table_name = "teachers" # Đã sửa thành chữ thường
+            table_name = "teachers" 
             id_col = "teacher_id"
         elif role == "Student":
-            table_name = "students" # Đã sửa thành chữ thường
+            table_name = "students" 
             id_col = "student_id"
         else:
             return False, "Vai trò (Role) không hợp lệ!"
-
-        # ĐÃ SỬA: Chữ full_name có dấu gạch dưới cho khớp DB
+       
         sql = f"""
             INSERT INTO {table_name} ({id_col}, full_name, email, password)
             VALUES (%s, %s, %s, %s)
         """
         cursor.execute(sql, (user_id, fullname, email, password))
         
-        # Bắt buộc phải commit để XAMPP lưu thật
         conn.commit()
         return True, f"Thêm {role} ({user_id}) thành công vào hệ thống!"
         
@@ -44,10 +37,6 @@ def save_new_user_to_db(user_id, fullname, email, role, password):
         if conn.is_connected():
             conn.close()
 
-
-# =====================
-# Quản lý Môn học / Lớp học (UC 12)
-# =====================
 def save_new_course_to_db(course_id, course_name):
     """
     Lưu môn học mới vào bảng classes.
@@ -59,9 +48,6 @@ def save_new_course_to_db(course_id, course_name):
     try:
         cursor = conn.cursor()
         
-        # ĐÃ SỬA: Đổi tên bảng thành classes 
-        # LƯU Ý: Đang giả định 2 cột trên DB của bạn là class_id và class_name
-        # Nếu chạy bị lỗi "Unknown column", hãy mở XAMPP xem lại tên 2 cột này nhé!
         sql = """
             INSERT INTO classes (class_id, class_name)
             VALUES (%s, %s)
