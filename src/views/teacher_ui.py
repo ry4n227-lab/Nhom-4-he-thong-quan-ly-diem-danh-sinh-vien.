@@ -17,9 +17,11 @@ ctk.set_default_color_theme("blue")
 class TeacherDashboard(ctk.CTk):
     def __init__(self, teacher_id="T01"):
         super().__init__()
+        
         self.teacher_id = teacher_id
         self.title("Teacher Dashboard")
         self.geometry("750x650")
+        self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
 
         # ĐÃ XÓA NÚT ĐĂNG XUẤT Ở ĐÂY
@@ -156,7 +158,7 @@ class TeacherDashboard(ctk.CTk):
         else:
             messagebox.showerror("Lỗi Database", msg)
 
-  def handle_request(self, req_id, status):
+    def handle_request(self, req_id, status):
         # 1. Gọi xuống Database để cập nhật thật
         success, msg = update_leave_request_status(req_id, status)
         
