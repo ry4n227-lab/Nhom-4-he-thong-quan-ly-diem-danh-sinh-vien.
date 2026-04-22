@@ -23,7 +23,7 @@ class TeacherDashboard(ctk.CTk):
 
         # ĐÃ XÓA NÚT ĐĂNG XUẤT Ở ĐÂY
 
-        ctk.CTkLabel(self, text=f"TEACHER DASHBOARD ({self.teacher_id})", font=("Arial", 22, "bold")).pack(pady=10)
+        ctk.CTkLabel(self, text="TEACHER DASHBOARD", font=("Arial", 22, "bold")).pack(pady=10)
 
         # ==========================================
         # 1. TẠO BUỔI ĐIỂM DANH (CREATE SESSION)
