@@ -112,9 +112,7 @@ def update_student(student_id, new_name, new_email, new_class):
         if conn.is_connected():
             conn.close()
 
-# =====================
-# CHECK LOGIN
-# =====================
+
 def check_login(user_id, password, role):
     conn = connect_db()
     if conn is None:
@@ -147,9 +145,7 @@ def check_login(user_id, password, role):
         if conn.is_connected():
             conn.close()
 
-# =====================
-# CHECK SCHEDULE
-# =====================
+
 def check_schedule_conflict(room, date, start_time, end_time):
     conn = connect_db()
     if conn is None:
@@ -177,22 +173,16 @@ def check_schedule_conflict(room, date, start_time, end_time):
         if conn.is_connected():
             conn.close()
 
-# Test chức năng
 if __name__ == "__main__":
-#Thêm
+
     add_student("SV05", "Tran T", "ttran@gmail.com", 1)
-    
-#Update
+
     update_student("SV05", "Tran T", "ttran@gmail.com", 1)
     
-#Xoá
     delete_student("SV05")
     
-#Xem ds
     get_students()
     
-#Check login
     print("Login Admin:", check_login("admin", "123456", "Admin"))
 
-#Check schedule
     print("Conflict:", check_schedule_conflict("A101", "2026-04-22", "09:00:00", "11:00:00"))
