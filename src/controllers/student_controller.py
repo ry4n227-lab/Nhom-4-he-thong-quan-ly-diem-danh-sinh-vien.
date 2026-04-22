@@ -1,4 +1,3 @@
-# File: src/controllers/student_controller.py
 from .login_controller import get_db_connection
 
 def get_attendance_history(student_id):
@@ -12,8 +11,7 @@ def get_attendance_history(student_id):
 
     try:
         cursor = conn.cursor()
-        
-        # Sửa lại tên bảng "attendance" cho khớp với XAMPP của nhóm
+
         sql = """
             SELECT date, status 
             FROM attendance 
@@ -32,11 +30,8 @@ def get_attendance_history(student_id):
         if conn.is_connected():
             conn.close()
 
-from .login_controller import get_db_connection # Tận dụng lại hàm kết nối DB
+from .login_controller import get_db_connection 
 
-# =====================
-# Hàm gửi đơn xin nghỉ cho Sinh viên
-# =====================
 def submit_leave_request(student_id, reason, date):
     conn = get_db_connection()
     if not conn:
@@ -45,25 +40,24 @@ def submit_leave_request(student_id, reason, date):
     try:
         cursor = conn.cursor()
         
-        # Lệnh SQL Insert dữ liệu (Mặc định status là 'Pending')
         sql = """
             INSERT INTO leave_requests (student_id, reason, date, status) 
             VALUES (%s, %s, %s, 'Pending')
         """
         
-        # Thực thi lệnh
+
         cursor.execute(sql, (student_id, reason, date))
         
-        # BƯỚC QUAN TRỌNG NHẤT: CHỐT SỔ (LƯU VĨNH VIỄN) VÀO DATABASE
+
         conn.commit() 
         
         return True, "Đã gửi đơn xin nghỉ thành công! Vui lòng chờ Giảng viên duyệt."
         
     except Exception as e:
-        # Nếu có lỗi (ví dụ sai tên bảng, sai cột) thì In ra để biết đường sửa
+
         print("Lỗi khi nộp đơn:", e)
         return False, f"Lỗi Database: {str(e)}"
     finally:
-        # Nhớ đóng cửa khi ra về
+
         if conn.is_connected():
             conn.close()
