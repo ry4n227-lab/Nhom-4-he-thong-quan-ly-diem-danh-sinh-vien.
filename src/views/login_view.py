@@ -64,6 +64,7 @@ class LoginView(ctk.CTk):
         self.btn_login.pack(pady=(30, 20))
 
     # --- Xử lý sự kiện ---
+    # --- Xử lý sự kiện ---
     def process_login(self):
         username = self.entry_id.get().strip()
         password = self.entry_pass.get().strip()
@@ -73,18 +74,27 @@ class LoginView(ctk.CTk):
             messagebox.showwarning("Thông báo", "Vui lòng nhập đầy đủ thông tin!")
             return
 
-       # Gọi hàm kiểm tra từ login_controller.py
+        # Gọi hàm kiểm tra từ login_controller.py
         try:
             is_valid = verify_login(username, password, role)
             if is_valid:
                 messagebox.showinfo("Thành công", f"Chào mừng {role} đã quay trở lại!")
                 
-                # SỬA DÒNG NÀY: Dùng destroy() thay vì withdraw()
+                # BƯỚC 1: Tạm thời giấu màn hình Login đi 
+                self.withdraw() 
+                
+                # BƯỚC 2: Mở Dashboard. 
+                self.open_main_dashboard(role) 
+                
+                # BƯỚC 3: Dọn dẹp Zombie sau khi tắt Dashboard! 
                 self.destroy() 
                 
-                self.open_main_dashboard(role)
             else:
                 messagebox.showerror("Lỗi", "Tài khoản hoặc mật khẩu không chính xác!")
+                
+        # ĐÂY LÀ ĐOẠN BỊ THIẾU GÂY RA LỖI:
+        except Exception as e:
+            messagebox.showerror("Lỗi hệ thống", f"Đã xảy ra lỗi: {e}")
 
     def open_main_dashboard(self, role):
         try:
