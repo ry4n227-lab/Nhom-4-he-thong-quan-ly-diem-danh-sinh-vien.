@@ -20,6 +20,7 @@ class AdminDashboard(ctk.CTk):
 
         self.title("Admin Dashboard")
         self.geometry("1000x600")
+        self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
 
         # Layout
