@@ -24,13 +24,10 @@ class TeacherDashboard(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
 
-        # ĐÃ XÓA NÚT ĐĂNG XUẤT Ở ĐÂY
 
         ctk.CTkLabel(self, text="TEACHER DASHBOARD", font=("Arial", 22, "bold")).pack(pady=10)
 
-        # ==========================================
-        # 1. TẠO BUỔI ĐIỂM DANH (CREATE SESSION)
-        # ==========================================
+    
         session_frame = ctk.CTkFrame(self, fg_color="transparent")
         session_frame.pack(pady=5, fill="x", padx=20)
 
@@ -43,9 +40,6 @@ class TeacherDashboard(ctk.CTk):
         self.btn_create = ctk.CTkButton(session_frame, text="Tạo buổi điểm danh", font=("Arial", 14, "bold"), command=self.create_session)
         self.btn_create.grid(row=1, column=2, padx=20, pady=5)
 
-        # ==========================================
-        # 2. DANH SÁCH ĐIỂM DANH (TAKE ATTENDANCE)
-        # ==========================================
         ctk.CTkLabel(self, text="2. Student List", font=("Arial", 16, "bold")).pack(pady=(15, 5), anchor="w", padx=20)
 
         self.student_frame = ctk.CTkScrollableFrame(self, width=650, height=200)
@@ -57,19 +51,13 @@ class TeacherDashboard(ctk.CTk):
         self.btn_save = ctk.CTkButton(self, text="Save Attendance", command=self.save_attendance, font=("Arial", 14, "bold"), state="disabled")
         self.btn_save.pack(pady=10)
 
-        # ==========================================
-        # 3. DUYỆT ĐƠN (LEAVE REQUESTS)
-        # ==========================================
         ctk.CTkLabel(self, text="Leave Requests", font=("Arial", 16, "bold")).pack(pady=(10, 5))
 
         self.req_frame = ctk.CTkScrollableFrame(self, width=650, height=130)
         self.req_frame.pack(pady=5, padx=20, fill="x")
 
-        # Gọi hàm load dữ liệu ban đầu
         self.load_classes_from_db()
         self.load_leave_requests()
-
-    # ================= CÁC HÀM XỬ LÝ DỮ LIỆU =================
 
     def load_classes_from_db(self):
         success, msg, classes = get_teacher_classes(self.teacher_id)
@@ -159,17 +147,12 @@ class TeacherDashboard(ctk.CTk):
             messagebox.showerror("Lỗi Database", msg)
 
     def handle_request(self, req_id, status):
-        # 1. Gọi xuống Database để cập nhật thật
         success, msg = update_leave_request_status(req_id, status)
         
         if success:
             messagebox.showinfo("Thành công", f"Đã {status} đơn số {req_id}")
-            
-            # 2. Xóa sạch các đơn cũ đang hiển thị trên màn hình
             for widget in self.req_frame.winfo_children():
                 widget.destroy()
-                
-            # 3. Tải lại danh sách đơn (những đơn Pending còn lại)
             self.load_leave_requests()
         else:
             messagebox.showerror("Lỗi Database", msg)
