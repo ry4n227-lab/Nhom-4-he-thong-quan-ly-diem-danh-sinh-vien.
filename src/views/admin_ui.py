@@ -4,9 +4,6 @@ from tkinter import messagebox
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
-# ==========================================
-# IMPORT TOÀN BỘ CONTROLLER BACKEND
-# ==========================================
 try:
     from src.controllers.admin_controller import save_new_user_to_db, save_new_course_to_db
     from src.controllers.schedule_controller import check_schedule_conflict, save_new_schedule
@@ -43,7 +40,6 @@ class AdminDashboard(ctk.CTk):
 
         self.show_users()
 
-    # ================= USERS (UC 11) =================
     def show_users(self):
         self.clear_frame()
 
@@ -106,7 +102,6 @@ class AdminDashboard(ctk.CTk):
         if confirm:
             messagebox.showinfo("Deleted", "Mock: User deleted")
 
-    # ================= COURSES (UC 12) =================
     def show_courses(self):
         self.clear_frame()
 
@@ -150,7 +145,6 @@ class AdminDashboard(ctk.CTk):
     def delete_course(self):
         messagebox.showinfo("Deleted", "Mock: Course deleted")
 
-    # ================= SCHEDULE (UC 13) =================
     def show_schedule(self):
         self.clear_frame()
 
@@ -183,7 +177,6 @@ class AdminDashboard(ctk.CTk):
             messagebox.showerror("Error", "Vui lòng điền đủ thông tin xếp lịch!")
             return
 
-        # Cắt chuỗi thời gian (VD: "07:00-09:00" -> start="07:00", end="09:00")
         try:
             start_time, end_time = time_val.split('-')
             start_time = start_time.strip()
@@ -192,15 +185,12 @@ class AdminDashboard(ctk.CTk):
             messagebox.showerror("Error", "Sai định dạng thời gian! Vui lòng nhập kiểu 07:00-09:00")
             return
 
-        # Gọi logic kiểm tra trùng và lưu DB
         try:
-            # 1. Check trùng lịch
             is_conflict = check_schedule_conflict(room_val, date_val, start_time, end_time)
             if is_conflict:
                 messagebox.showerror("Conflict Error", f"Lỗi: Phòng {room_val} đã bị kẹt lịch vào khoảng thời gian này!")
                 return
 
-            # 2. Lưu nếu không trùng
             is_saved = save_new_schedule(cid, date_val, start_time, end_time, room_val)
             if is_saved:
                 messagebox.showinfo("Success", "Đã lưu lịch học thành công vào XAMPP!")
@@ -214,7 +204,6 @@ class AdminDashboard(ctk.CTk):
         except NameError:
             messagebox.showwarning("Lỗi Import", "Chưa kết nối được với file schedule_controller.py")
 
-    # ================= HELPER =================
     def clear_frame(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
