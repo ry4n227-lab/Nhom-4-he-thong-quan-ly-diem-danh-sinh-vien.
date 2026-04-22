@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
+
 try:
     from src.controllers.student_controller import get_attendance_history
 except ImportError:
@@ -19,7 +20,6 @@ class StudentDashboard(ctk.CTk):
         self.geometry("650x650")
         self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
-        
         self.protocol("WM_DELETE_WINDOW", self.dong_cua_so_chuan)
 
         self.file_path = ""
@@ -36,6 +36,7 @@ class StudentDashboard(ctk.CTk):
 
         ctk.CTkButton(history_frame, text="Tải lịch sử", font=("Arial", 14, "bold"), 
                       command=self.load_history).pack(anchor="e")
+
 
         leave_frame = ctk.CTkFrame(self, fg_color="transparent")
         leave_frame.pack(pady=20, fill="x", padx=30)
@@ -83,7 +84,6 @@ class StudentDashboard(ctk.CTk):
                 self.history_box.insert("end", f"Ngày {date_val}: {status_val}\n")
                 if status_val == "Absent":
                     absent_count += 1
-
             if absent_count >= 3:
                 messagebox.showwarning("CẢNH BÁO HỌC VỤ ⚠️", 
                     f"Bạn đã vắng mặt {absent_count} buổi!\n\nNếu vắng quá 3 buổi, bạn sẽ bị cấm thi môn này.")
@@ -100,7 +100,7 @@ class StudentDashboard(ctk.CTk):
             self.file_path = file
             filename = file.split("/")[-1]
             self.file_label.configure(text=f"📎 {filename}", text_color="blue")
-            
+
     def submit_request(self):
         date = self.date_entry.get().strip()
         reason = self.reason_entry.get("1.0", "end").strip()
@@ -111,7 +111,7 @@ class StudentDashboard(ctk.CTk):
 
         try:
             from src.controllers.student_controller import submit_leave_request
-            
+
             success, msg = submit_leave_request(self.student_id, reason, date)
 
             if success:
