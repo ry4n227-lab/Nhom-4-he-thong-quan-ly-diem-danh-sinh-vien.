@@ -27,7 +27,6 @@ class TeacherDashboard(ctk.CTk):
 
         ctk.CTkLabel(self, text="TEACHER DASHBOARD", font=("Arial", 22, "bold")).pack(pady=10)
 
-    
         session_frame = ctk.CTkFrame(self, fg_color="transparent")
         session_frame.pack(pady=5, fill="x", padx=20)
 
@@ -39,6 +38,7 @@ class TeacherDashboard(ctk.CTk):
 
         self.btn_create = ctk.CTkButton(session_frame, text="Tạo buổi điểm danh", font=("Arial", 14, "bold"), command=self.create_session)
         self.btn_create.grid(row=1, column=2, padx=20, pady=5)
+
 
         ctk.CTkLabel(self, text="2. Student List", font=("Arial", 16, "bold")).pack(pady=(15, 5), anchor="w", padx=20)
 
@@ -151,8 +151,10 @@ class TeacherDashboard(ctk.CTk):
         
         if success:
             messagebox.showinfo("Thành công", f"Đã {status} đơn số {req_id}")
+            
             for widget in self.req_frame.winfo_children():
                 widget.destroy()
+
             self.load_leave_requests()
         else:
             messagebox.showerror("Lỗi Database", msg)
