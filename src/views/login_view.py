@@ -84,7 +84,7 @@ class LoginView(ctk.CTk):
                 self.withdraw() 
                 
                 # BƯỚC 2: Mở Dashboard. 
-                self.open_main_dashboard(role) 
+                self.open_main_dashboard(role, username) 
                 
                 # BƯỚC 3: Dọn dẹp Zombie sau khi tắt Dashboard! 
                 self.destroy() 
@@ -96,7 +96,7 @@ class LoginView(ctk.CTk):
         except Exception as e:
             messagebox.showerror("Lỗi hệ thống", f"Đã xảy ra lỗi: {e}")
 
-    def open_main_dashboard(self, role):
+    def open_main_dashboard(self, role, username):
         try:
             if role == "Admin":
                 from src.views.admin_ui import AdminDashboard
@@ -104,11 +104,11 @@ class LoginView(ctk.CTk):
                 app.mainloop()
             elif role == "Teachers":
                 from src.views.teacher_ui import TeacherDashboard
-                app = TeacherDashboard()
+                app = TeacherDashboard(teacher_id=username)
                 app.mainloop()
             elif role == "Students":
                 from src.views.student_ui import StudentDashboard
-                app = StudentDashboard()
+                app = StudentDashboard(student_id=username)
                 app.mainloop()
         except Exception as e:
             print(f"Lỗi khởi động Dashboard: {e}")
