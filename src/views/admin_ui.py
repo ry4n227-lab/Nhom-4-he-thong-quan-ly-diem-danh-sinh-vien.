@@ -19,12 +19,10 @@ class AdminDashboard(ctk.CTk):
         self.geometry("1000x600")
         self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
-
-        # Layout
+        
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200)
         self.sidebar.grid(row=0, column=0, sticky="ns")
 
@@ -34,7 +32,6 @@ class AdminDashboard(ctk.CTk):
         ctk.CTkButton(self.sidebar, text="Manage Courses", command=self.show_courses).pack(pady=10)
         ctk.CTkButton(self.sidebar, text="Manage Schedule", command=self.show_schedule).pack(pady=10)
 
-        # Main Content
         self.main_frame = ctk.CTkFrame(self)
         self.main_frame.grid(row=0, column=1, sticky="nsew")
 
@@ -68,7 +65,6 @@ class AdminDashboard(ctk.CTk):
         ctk.CTkButton(btn_frame, text="Delete", command=self.delete_user).grid(row=0, column=2, padx=5)
 
     def add_user(self):
-        # 1. Lấy dữ liệu từ giao diện
         uid = self.user_id.get().strip()
         fname = self.fullname.get().strip()
         email_val = self.email.get().strip()
@@ -79,12 +75,10 @@ class AdminDashboard(ctk.CTk):
             messagebox.showerror("Error", "Vui lòng điền đủ các trường bắt buộc (ID, Email, Pass)!")
             return
 
-        # 2. Gọi logic lưu vào Database
         try:
             is_saved, msg = save_new_user_to_db(uid, fname, email_val, role_val, pwd)
             if is_saved:
                 messagebox.showinfo("Success", msg)
-                # Xóa trắng form sau khi thêm thành công
                 self.user_id.delete(0, 'end')
                 self.fullname.delete(0, 'end')
                 self.email.delete(0, 'end')
@@ -185,6 +179,7 @@ class AdminDashboard(ctk.CTk):
             messagebox.showerror("Error", "Sai định dạng thời gian! Vui lòng nhập kiểu 07:00-09:00")
             return
 
+
         try:
             is_conflict = check_schedule_conflict(room_val, date_val, start_time, end_time)
             if is_conflict:
@@ -194,7 +189,6 @@ class AdminDashboard(ctk.CTk):
             is_saved = save_new_schedule(cid, date_val, start_time, end_time, room_val)
             if is_saved:
                 messagebox.showinfo("Success", "Đã lưu lịch học thành công vào XAMPP!")
-                # Xóa Form
                 self.schedule_course.delete(0, 'end')
                 self.date.delete(0, 'end')
                 self.time.delete(0, 'end')
@@ -207,7 +201,6 @@ class AdminDashboard(ctk.CTk):
     def clear_frame(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-
 
 if __name__ == "__main__":
     app = AdminDashboard()
