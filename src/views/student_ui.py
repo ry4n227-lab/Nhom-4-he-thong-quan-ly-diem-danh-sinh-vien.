@@ -1,41 +1,31 @@
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 
-# ==========================================
-# THIẾT LẬP GIAO DIỆN ĐỒNG BỘ
-# ==========================================
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
-# Kết nối với Backend
 try:
     from src.controllers.student_controller import get_attendance_history
 except ImportError:
     print("Cảnh báo: Chưa tìm thấy file student_controller.py")
 
 class StudentDashboard(ctk.CTk):
-    # SỬA LỖI 1: Khai báo student_id ở đây để nhận ID từ lúc Đăng nhập truyền sang
     def __init__(self, student_id="SV01"): 
         super().__init__()
         
-        self.student_id = student_id # Lưu mã sinh viên vào hệ thống
+        self.student_id = student_id 
         
         self.title("Student Dashboard")
         self.geometry("650x650")
         self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
         
-        # Lệnh chống chạy ngầm (Zombie) khi bấm dấu X
         self.protocol("WM_DELETE_WINDOW", self.dong_cua_so_chuan)
 
         self.file_path = ""
 
-        # Tiêu đề chính
         ctk.CTkLabel(self, text=f"STUDENT DASHBOARD ({self.student_id})", font=("Arial", 22, "bold")).pack(pady=15)
 
-        # ==========================================
-        # 1. XEM LỊCH SỬ & CẢNH BÁO (UC 5)
-        # ==========================================
         history_frame = ctk.CTkFrame(self, fg_color="transparent")
         history_frame.pack(pady=10, fill="x", padx=30)
 
@@ -47,10 +37,6 @@ class StudentDashboard(ctk.CTk):
         ctk.CTkButton(history_frame, text="Tải lịch sử", font=("Arial", 14, "bold"), 
                       command=self.load_history).pack(anchor="e")
 
-
-        # ==========================================
-        # 2. NỘP ĐƠN XIN PHÉP (UC 3 & 6)
-        # ==========================================
         leave_frame = ctk.CTkFrame(self, fg_color="transparent")
         leave_frame.pack(pady=20, fill="x", padx=30)
 
@@ -63,7 +49,6 @@ class StudentDashboard(ctk.CTk):
         self.reason_entry.insert("1.0", "Nhập lý do nghỉ học...")
         self.reason_entry.pack(pady=5, fill="x")
 
-        # Tải minh chứng
         upload_frame = ctk.CTkFrame(leave_frame, fg_color="transparent")
         upload_frame.pack(fill="x", pady=5)
 
@@ -73,18 +58,13 @@ class StudentDashboard(ctk.CTk):
         self.file_label = ctk.CTkLabel(upload_frame, text="Chưa chọn tệp", text_color="gray", font=("Arial", 12, "italic"))
         self.file_label.pack(side="left", padx=15)
 
-        # Nút Submit
         ctk.CTkButton(leave_frame, text="Gửi Đơn Xin Nghỉ", font=("Arial", 16, "bold"), 
                       fg_color="green", hover_color="darkgreen", height=40,
                       command=self.submit_request).pack(pady=20)
 
-
-    # ================= LOGIC XỬ LÝ =================
-
     def load_history(self):
         """Lấy dữ liệu từ DB và kiểm tra cảnh báo vắng mặt"""
         try:
-            # SỬA: Đã lấy self.student_id tự động thay vì gõ cứng "SV01"
             success, msg, data = get_attendance_history(self.student_id)
             
             if not success:
@@ -104,7 +84,6 @@ class StudentDashboard(ctk.CTk):
                 if status_val == "Absent":
                     absent_count += 1
 
-            # CẢNH BÁO TỰ ĐỘNG
             if absent_count >= 3:
                 messagebox.showwarning("CẢNH BÁO HỌC VỤ ⚠️", 
                     f"Bạn đã vắng mặt {absent_count} buổi!\n\nNếu vắng quá 3 buổi, bạn sẽ bị cấm thi môn này.")
@@ -121,8 +100,7 @@ class StudentDashboard(ctk.CTk):
             self.file_path = file
             filename = file.split("/")[-1]
             self.file_label.configure(text=f"📎 {filename}", text_color="blue")
-
-    # SỬA LỖI 2: Đã thụt lề hàm này vào đúng vị trí của class StudentDashboard
+            
     def submit_request(self):
         date = self.date_entry.get().strip()
         reason = self.reason_entry.get("1.0", "end").strip()
@@ -134,13 +112,11 @@ class StudentDashboard(ctk.CTk):
         try:
             from src.controllers.student_controller import submit_leave_request
             
-            # Gửi dữ liệu xuống Controller để lưu vào XAMPP
             success, msg = submit_leave_request(self.student_id, reason, date)
 
             if success:
                 messagebox.showinfo("Thành công", msg)
                 
-                # Reset form
                 self.date_entry.delete(0, 'end')
                 self.reason_entry.delete("1.0", "end")
                 self.file_label.configure(text="Chưa chọn tệp", text_color="gray")
