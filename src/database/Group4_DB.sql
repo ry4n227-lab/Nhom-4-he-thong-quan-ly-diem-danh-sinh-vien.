@@ -2,9 +2,6 @@ DROP DATABASE IF EXISTS attendance_db;
 CREATE DATABASE attendance_db;
 USE attendance_db;
 
--- =====================
--- Admin
--- =====================
 CREATE TABLE Admin (
     admin_id VARCHAR(10) PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
@@ -12,9 +9,6 @@ CREATE TABLE Admin (
     full_name VARCHAR(100)
 );
 
--- =====================
--- Teachers
--- =====================
 CREATE TABLE Teachers (
     teacher_id VARCHAR(10) PRIMARY KEY,
     full_name VARCHAR(100),
@@ -22,9 +16,6 @@ CREATE TABLE Teachers (
     password VARCHAR(20) DEFAULT '123456'
 );
 
--- =====================
--- Classes
--- =====================
 CREATE TABLE Classes (
     class_id INT AUTO_INCREMENT PRIMARY KEY,
     class_name VARCHAR(100),
@@ -32,9 +23,6 @@ CREATE TABLE Classes (
     FOREIGN KEY (teacher_id) REFERENCES Teachers(teacher_id) ON DELETE CASCADE
 );
 
--- =====================
--- Students
--- =====================
 CREATE TABLE Students (
     student_id VARCHAR(10) PRIMARY KEY,
     full_name VARCHAR(100),
@@ -44,9 +32,6 @@ CREATE TABLE Students (
     FOREIGN KEY (class_id) REFERENCES Classes(class_id) ON DELETE SET NULL
 );
 
--- =====================
--- Attendance
--- =====================
 CREATE TABLE Attendance (
     attendance_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10),
@@ -57,9 +42,6 @@ CREATE TABLE Attendance (
     FOREIGN KEY (class_id) REFERENCES Classes(class_id) ON DELETE CASCADE
 );
 
--- =====================
--- Bảng Sessions 
--- =====================
 CREATE TABLE Sessions (
     session_id INT AUTO_INCREMENT PRIMARY KEY,
     class_id INT,
@@ -82,37 +64,22 @@ CREATE TABLE IF NOT EXISTS leave_requests (
 
 USE attendance_db;
 
--- =====================
--- ADMIN
--- =====================
 INSERT INTO Admin VALUES ('A01', 'admin', '123456', 'System administrator');
 
--- =====================
--- TEACHERS
--- =====================
 INSERT INTO Teachers (teacher_id, full_name, email, password) VALUES
 ('T01', 'Nguyen Van A', 'vana@gmail.com', '123456'),
 ('T02', 'Tran Thi B', 'thib@gmail.com', '123456');
 
--- =====================
--- CLASSES
--- =====================
 INSERT INTO Classes (class_name, teacher_id) VALUES
 ('CNTT1', 'T01'),
 ('CNTT2', 'T02');
 
--- =====================
--- STUDENTS
--- =====================
 INSERT INTO Students (student_id, full_name, email, class_id, password) VALUES
 ('SV01', 'Le Minh Hoang', 'hoang@gmail.com', 1, '123456'),
 ('SV02', 'Pham Thu Trang', 'trang@gmail.com', 1, '123456'),
 ('SV03', 'Nguyen Quang Huy', 'huy@gmail.com', 2, '123456'),
 ('SV04', 'Do Thi Lan', 'lan@gmail.com', 2, '123456');
 
--- =====================
--- ATTENDANCE
--- =====================
 INSERT INTO Attendance (student_id, class_id, date, status) VALUES
 ('SV01', 1, '2026-04-20', 'Present'),
 ('SV02', 1, '2026-04-20', 'Absent'),
