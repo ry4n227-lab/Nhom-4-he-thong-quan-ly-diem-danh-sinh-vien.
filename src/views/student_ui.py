@@ -22,6 +22,7 @@ class StudentDashboard(ctk.CTk):
         
         self.title("Student Dashboard")
         self.geometry("650x650")
+        self.protocol("WM_DELETE_WINDOW", exit)
         self.eval('tk::PlaceWindow . center')
         
         # Lệnh chống chạy ngầm (Zombie) khi bấm dấu X
