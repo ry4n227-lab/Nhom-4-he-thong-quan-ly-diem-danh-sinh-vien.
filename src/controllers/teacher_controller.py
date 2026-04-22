@@ -112,3 +112,27 @@ def get_leave_requests():
     finally:
         if conn.is_connected():
             conn.close()
+# =====================
+# 5. Cập nhật trạng thái Đơn xin nghỉ
+# =====================
+def update_leave_request_status(request_id, status):
+    conn = get_db_connection()
+    if not conn:
+        return False, "Lỗi kết nối Database!"
+
+    try:
+        cursor = conn.cursor()
+        # Lệnh SQL để sửa status từ Pending thành Approved hoặc Rejected
+        sql = "UPDATE leave_requests SET status = %s WHERE request_id = %s"
+        cursor.execute(sql, (status, request_id))
+        
+        # Nhớ COMMIT để chốt sổ!
+        conn.commit()
+        
+        return True, f"Đã cập nhật thành {status}!"
+    except Exception as e:
+        print("Lỗi khi duyệt đơn:", e)
+        return False, f"Lỗi DB: {str(e)}"
+    finally:
+        if conn.is_connected():
+            conn.close()
