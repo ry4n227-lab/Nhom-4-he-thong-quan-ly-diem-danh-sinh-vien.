@@ -3,7 +3,6 @@ from tkinter import messagebox
 import datetime
 
 try:
-    # Nhập tất cả các hàm từ controller
     from src.controllers.teacher_controller import (
         get_teacher_classes, get_class_students, 
         save_attendance_data, get_leave_requests
@@ -15,7 +14,6 @@ ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 class TeacherDashboard(ctk.CTk):
-    # Thêm biến teacher_id vào (Mặc định là T01 để bạn dễ test)
     def __init__(self, teacher_id="T01"):
         super().__init__()
         self.teacher_id = teacher_id
@@ -23,10 +21,7 @@ class TeacherDashboard(ctk.CTk):
         self.geometry("750x650")
         self.eval('tk::PlaceWindow . center')
 
-        # Nút Đăng xuất
-        ctk.CTkButton(self, text="Đăng xuất", font=("Arial", 12, "bold"), 
-                      fg_color="#d9534f", hover_color="#c9302c", width=90,
-                      command=self.logout).place(x=640, y=15)
+        # ĐÃ XÓA NÚT ĐĂNG XUẤT Ở ĐÂY
 
         ctk.CTkLabel(self, text=f"TEACHER DASHBOARD ({self.teacher_id})", font=("Arial", 22, "bold")).pack(pady=10)
 
@@ -37,10 +32,8 @@ class TeacherDashboard(ctk.CTk):
         session_frame.pack(pady=5, fill="x", padx=20)
 
         ctk.CTkLabel(session_frame, text="1. Create Attendance Session", font=("Arial", 16, "bold")).grid(row=0, column=0, sticky="w", pady=5)
-        
         ctk.CTkLabel(session_frame, text="Select Class:", font=("Arial", 14)).grid(row=1, column=0, padx=10, pady=5, sticky="e")
         
-        # Combobox để trống, sẽ load từ DB sau
         self.cb_class = ctk.CTkComboBox(session_frame, values=["Đang tải..."], width=200)
         self.cb_class.grid(row=1, column=1, padx=10, pady=5)
 
@@ -76,10 +69,8 @@ class TeacherDashboard(ctk.CTk):
     # ================= CÁC HÀM XỬ LÝ DỮ LIỆU =================
 
     def load_classes_from_db(self):
-        """Đổ danh sách lớp của giáo viên này vào Combobox"""
         success, msg, classes = get_teacher_classes(self.teacher_id)
         if success and classes:
-            # Format hiển thị dạng: "Mã Lớp - Tên Lớp" (VD: "3 - ENGLISH01")
             class_values = [f"{c[0]} - {c[1]}" for c in classes]
             self.cb_class.configure(values=class_values)
             self.cb_class.set(class_values[0])
@@ -88,11 +79,10 @@ class TeacherDashboard(ctk.CTk):
             self.cb_class.set("Chưa có lớp được phân công")
 
     def load_leave_requests(self):
-        """Đổ danh sách đơn xin nghỉ vào màn hình (Có kèm Tên)"""
         success, msg, requests = get_leave_requests()
         
         if not success:
-            ctk.CTkLabel(self.req_frame, text=f"Lỗi tải đơn hoặc {msg}", text_color="red").pack()
+            ctk.CTkLabel(self.req_frame, text=f"Lỗi: {msg}", text_color="red").pack()
             return
             
         if not requests:
@@ -104,7 +94,6 @@ class TeacherDashboard(ctk.CTk):
             frame = ctk.CTkFrame(self.req_frame)
             frame.pack(pady=5, fill="x", padx=5)
 
-            # Đã thêm Tên Sinh Viên (sv_name)
             text = f"[{date}] {sv_id} - {sv_name} | Lý do: {reason}"
             ctk.CTkLabel(frame, text=text, font=("Arial", 13)).pack(side="left", padx=10, pady=10)
 
@@ -114,29 +103,23 @@ class TeacherDashboard(ctk.CTk):
                           command=lambda r=req_id: self.handle_request(r, "Approved")).pack(side="right", padx=5)
 
     def create_session(self):
-        """Mở ca và hiện danh sách sinh viên thật từ DB"""
         class_selected = self.cb_class.get()
         if "Chưa có lớp" in class_selected:
             messagebox.showwarning("Cảnh báo", "Bạn chưa có lớp học nào để điểm danh!")
             return
 
-        # Lấy Mã Lớp (Cắt chuỗi "3 - ENGLISH01" -> Lấy "3")
         class_id = class_selected.split(' - ')[0].strip()
-
-        # Gọi Database lấy danh sách Sinh viên
         success, msg, students = get_class_students(class_id)
 
         if not success:
             messagebox.showerror("Lỗi", msg)
             return
 
-        # Xóa danh sách cũ trên màn hình (nếu có)
         for widget in self.student_frame.winfo_children():
             widget.destroy()
         self.student_ids.clear()
         self.status_vars.clear()
 
-        # Đổ sinh viên thật lên màn hình
         for sv_id, sv_name in students:
             frame = ctk.CTkFrame(self.student_frame)
             frame.pack(pady=2, fill="x")
@@ -173,19 +156,7 @@ class TeacherDashboard(ctk.CTk):
             messagebox.showerror("Lỗi Database", msg)
 
     def handle_request(self, req_id, status):
-        # Thực tế bạn sẽ gọi hàm Update DB ở đây
         messagebox.showinfo("Thông báo", f"Đã {status} đơn số {req_id}")
-
-    def logout(self):
-        confirm = messagebox.askyesno("Xác nhận", "Bạn có chắc chắn muốn đăng xuất?")
-        if confirm:
-            self.destroy() 
-            try:
-                from src.views.login_view import LoginView
-                app = LoginView()
-                app.mainloop()
-            except Exception as e:
-                pass
 
 if __name__ == "__main__":
     app = TeacherDashboard()
