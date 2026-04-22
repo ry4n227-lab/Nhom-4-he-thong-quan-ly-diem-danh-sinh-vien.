@@ -14,17 +14,23 @@ except ImportError:
     print("Cảnh báo: Chưa tìm thấy file student_controller.py")
 
 class StudentDashboard(ctk.CTk):
-
-    def __init__(self):
+    # SỬA LỖI 1: Khai báo student_id ở đây để nhận ID từ lúc Đăng nhập truyền sang
+    def __init__(self, student_id="SV01"): 
         super().__init__()
+        
+        self.student_id = student_id # Lưu mã sinh viên vào hệ thống
+        
         self.title("Student Dashboard")
         self.geometry("650x650")
         self.eval('tk::PlaceWindow . center')
+        
+        # Lệnh chống chạy ngầm (Zombie) khi bấm dấu X
+        self.protocol("WM_DELETE_WINDOW", self.dong_cua_so_chuan)
 
         self.file_path = ""
 
         # Tiêu đề chính
-        ctk.CTkLabel(self, text="STUDENT DASHBOARD", font=("Arial", 22, "bold")).pack(pady=15)
+        ctk.CTkLabel(self, text=f"STUDENT DASHBOARD ({self.student_id})", font=("Arial", 22, "bold")).pack(pady=15)
 
         # ==========================================
         # 1. XEM LỊCH SỬ & CẢNH BÁO (UC 5)
@@ -76,11 +82,9 @@ class StudentDashboard(ctk.CTk):
 
     def load_history(self):
         """Lấy dữ liệu từ DB và kiểm tra cảnh báo vắng mặt"""
-        # Giả định ID sinh viên hiện tại là SV01 (Thực tế lấy từ login)
-        current_student_id = "SV01" 
-
         try:
-            success, msg, data = get_attendance_history(current_student_id)
+            # SỬA: Đã lấy self.student_id tự động thay vì gõ cứng "SV01"
+            success, msg, data = get_attendance_history(self.student_id)
             
             if not success:
                 messagebox.showerror("Lỗi", msg)
@@ -107,7 +111,6 @@ class StudentDashboard(ctk.CTk):
                 messagebox.showinfo("Thông báo", f"Bạn đã vắng {absent_count} buổi. Hãy tiếp tục đi học đầy đủ!")
 
         except NameError:
-            # Dữ liệu mẫu nếu chưa có controller
             self.history_box.insert("end", "Dữ liệu mẫu (Chưa kết nối DB):\n2026-04-20: Absent\n2026-04-21: Absent\n2026-04-22: Absent")
             messagebox.showwarning("Cảnh báo", "Bạn đã vắng 3 buổi! (Dữ liệu mẫu)")
 
@@ -118,21 +121,38 @@ class StudentDashboard(ctk.CTk):
             filename = file.split("/")[-1]
             self.file_label.configure(text=f"📎 {filename}", text_color="blue")
 
+    # SỬA LỖI 2: Đã thụt lề hàm này vào đúng vị trí của class StudentDashboard
     def submit_request(self):
         date = self.date_entry.get().strip()
         reason = self.reason_entry.get("1.0", "end").strip()
 
-        if not date or not reason:
-            messagebox.showerror("Lỗi", "Vui lòng nhập đầy đủ thông tin ngày nghỉ và lý do!")
+        if not date or not reason or reason == "Nhập lý do nghỉ học...":
+            messagebox.showwarning("Cảnh báo", "Vui lòng nhập đầy đủ thông tin ngày nghỉ và lý do!")
             return
 
-        messagebox.showinfo("Thành công", f"Đơn xin nghỉ ngày {date} đã được gửi tới giảng viên.")
-        
-        # Reset form
-        self.date_entry.delete(0, 'end')
-        self.reason_entry.delete("1.0", "end")
-        self.file_label.configure(text="Chưa chọn tệp", text_color="gray")
-        self.file_path = ""
+        try:
+            from src.controllers.student_controller import submit_leave_request
+            
+            # Gửi dữ liệu xuống Controller để lưu vào XAMPP
+            success, msg = submit_leave_request(self.student_id, reason, date)
+
+            if success:
+                messagebox.showinfo("Thành công", msg)
+                
+                # Reset form
+                self.date_entry.delete(0, 'end')
+                self.reason_entry.delete("1.0", "end")
+                self.file_label.configure(text="Chưa chọn tệp", text_color="gray")
+                self.file_path = "" 
+            else:
+                messagebox.showerror("Lỗi Database", msg)
+                
+        except Exception as e:
+            messagebox.showerror("Lỗi Hệ thống", f"Không thể gọi Controller: {e}")
+            
+    def dong_cua_so_chuan(self):
+        self.quit()
+        self.destroy()
 
 if __name__ == "__main__":
     app = StudentDashboard()
