@@ -49,8 +49,7 @@ def get_class_students(class_id):
         if conn.is_connected():
             conn.close()
 
-# =====================
-# 3. Lưu Điểm danh
+# 3. Lưu / Cập nhật Điểm danh
 # =====================
 def save_attendance_data(class_id, date, attendance_list):
     conn = get_db_connection()
@@ -59,7 +58,14 @@ def save_attendance_data(class_id, date, attendance_list):
 
     try:
         cursor = conn.cursor()
-        sql = """
+        
+        # BƯỚC 1: Dọn dẹp dữ liệu cũ (Xóa điểm danh cũ của lớp này trong ngày hôm nay)
+        # Điều này giúp giáo viên có thể bấm Save nhiều lần để cập nhật lại điểm danh
+        delete_sql = "DELETE FROM attendance WHERE class_id = %s AND date = %s"
+        cursor.execute(delete_sql, (class_id, date))
+
+        # BƯỚC 2: Lưu dữ liệu mới vào
+        insert_sql = """
             INSERT INTO attendance (class_id, date, student_id, status) 
             VALUES (%s, %s, %s, %s)
         """
@@ -67,18 +73,17 @@ def save_attendance_data(class_id, date, attendance_list):
         for student_id, status in attendance_list:
             data_to_insert.append((class_id, date, student_id, status))
             
-        cursor.executemany(sql, data_to_insert)
+        cursor.executemany(insert_sql, data_to_insert)
+        
         conn.commit()
-        return True, f"Đã lưu thành công điểm danh cho {cursor.rowcount} sinh viên!"
+        return True, f"Đã lưu/cập nhật điểm danh cho {cursor.rowcount} sinh viên!"
 
     except Exception as e:
-        if "Duplicate entry" in str(e):
-            return False, "Lỗi: Lớp này đã được điểm danh trong ngày hôm nay rồi!"
+        print("Lỗi chi tiết khi lưu điểm danh:", e)
         return False, f"Lỗi Database: {str(e)}"
     finally:
         if conn.is_connected():
             conn.close()
-
 # =====================
 # 4. Lấy Đơn xin nghỉ phép (Có Tên Sinh viên)
 # =====================
